@@ -145,7 +145,7 @@ MonoBehaviour:
   propertyOverrides:
   - name: _Color
     type: 0
-    colValue: {r: 0.07239401, g: 0.16214718, b: 0.75735295, a: 0}
+    colValue: {r: 0.66176474, g: 0.087586515, b: 0.087586515, a: 0}
     vecValue: {x: 0, y: 0, z: 0, w: 0}
     floatValue: 0
     texValue: {fileID: 0}
@@ -240,7 +240,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 202682455}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.02, y: 0.903, z: -0.178}
+  m_LocalPosition: {x: 0.01999998, y: 0.903, z: -0.178}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 833849253}
@@ -378,6 +378,11 @@ Prefab:
       propertyPath: propertyOverrides.Array.size
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 205232884953814608, guid: ce0dd1b1b2133cc4a80eef57887f8835,
+        type: 2}
+      propertyPath: m_LODs.Array.data[0].renderers.Array.size
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 4912375747224704, guid: ce0dd1b1b2133cc4a80eef57887f8835, type: 2}
       propertyPath: m_LocalPosition.x
       value: -2
@@ -431,11 +436,11 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 4552547107803548, guid: ce0dd1b1b2133cc4a80eef57887f8835, type: 2}
       propertyPath: m_RootOrder
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4426456442752188, guid: ce0dd1b1b2133cc4a80eef57887f8835, type: 2}
       propertyPath: m_RootOrder
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 114533086334061522, guid: ce0dd1b1b2133cc4a80eef57887f8835,
         type: 2}
@@ -492,13 +497,33 @@ Prefab:
       propertyPath: propertyOverrides.Array.data[0].type
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 205232884953814608, guid: ce0dd1b1b2133cc4a80eef57887f8835,
+        type: 2}
+      propertyPath: m_LocalReferencePoint.x
+      value: 0.00999999
+      objectReference: {fileID: 0}
+    - target: {fileID: 205232884953814608, guid: ce0dd1b1b2133cc4a80eef57887f8835,
+        type: 2}
+      propertyPath: m_LocalReferencePoint.y
+      value: 0.4515
+      objectReference: {fileID: 0}
+    - target: {fileID: 205232884953814608, guid: ce0dd1b1b2133cc4a80eef57887f8835,
+        type: 2}
+      propertyPath: m_Size
+      value: 1.903
+      objectReference: {fileID: 0}
+    - target: {fileID: 205232884953814608, guid: ce0dd1b1b2133cc4a80eef57887f8835,
+        type: 2}
+      propertyPath: m_LODs.Array.data[0].renderers.Array.data[1].renderer
+      value: 
+      objectReference: {fileID: 202682457}
     m_RemovedComponents:
     - {fileID: 114533086334061522, guid: ce0dd1b1b2133cc4a80eef57887f8835, type: 2}
   m_ParentPrefab: {fileID: 100100000, guid: ce0dd1b1b2133cc4a80eef57887f8835, type: 2}
   m_IsPrefabParent: 0
 --- !u!4 &833849253 stripped
 Transform:
-  m_PrefabParentObject: {fileID: 4912375747224704, guid: ce0dd1b1b2133cc4a80eef57887f8835,
+  m_PrefabParentObject: {fileID: 4426456442752188, guid: ce0dd1b1b2133cc4a80eef57887f8835,
     type: 2}
   m_PrefabInternal: {fileID: 833849252}
 --- !u!1 &833849254 stripped
@@ -518,17 +543,23 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   propertyOverrides:
-  - name: _MainTex
-    type: 4
-    colValue: {r: 0, g: 0, b: 0, a: 0}
-    vecValue: {x: 0, y: 0, z: 0, w: 0}
-    floatValue: 0
-    texValue: {fileID: 2800000, guid: 716a7b86dae20e64da6329f5f75601bd, type: 3}
   - name: _Color
     type: 0
-    colValue: {r: 0.7205882, g: 0.31308314, b: 0, a: 0}
+    colValue: {r: 0.6102941, g: 0.45772058, b: 0.45772058, a: 0}
     vecValue: {x: 0, y: 0, z: 0, w: 0}
     floatValue: 0
+    texValue: {fileID: 0}
+  - name: _Metallic
+    type: 3
+    colValue: {r: 0, g: 0, b: 0, a: 0}
+    vecValue: {x: 0, y: 0, z: 0, w: 0}
+    floatValue: 0.349
+    texValue: {fileID: 0}
+  - name: _Glossiness
+    type: 3
+    colValue: {r: 0, g: 0, b: 0, a: 0}
+    vecValue: {x: 0, y: 0, z: 0, w: 0}
+    floatValue: 0.748
     texValue: {fileID: 0}
 --- !u!1001 &1024137956
 Prefab:
@@ -794,7 +825,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1960898273}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.911, y: 0, z: 0}
+  m_LocalPosition: {x: 3.393, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
