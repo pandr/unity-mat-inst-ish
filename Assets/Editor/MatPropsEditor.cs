@@ -140,10 +140,11 @@ public class MatPropsEditor : Editor
                 var buttonPressed = false;
                 if(m_ShowAll)
                     buttonPressed = GUILayout.Button(hasOverride ? "-" : "+", narrowButton);
+                var desc = new GUIContent(p.description, p.property);
                 if(!hasOverride)
                 {
                     // Draw an non-overridden property. Offer to become overridden
-                    GUILayout.Label(p.description);
+                    GUILayout.Label(desc);
                     if(buttonPressed)
                     {
                         var spv = new MatProps.ShaderPropertyValue();
@@ -160,19 +161,19 @@ public class MatPropsEditor : Editor
                     switch(p.type)
                     {
                         case ShaderUtil.ShaderPropertyType.Color:
-                            propOverride.colValue = EditorGUILayout.ColorField(p.description, propOverride.colValue);
+                            propOverride.colValue = EditorGUILayout.ColorField(desc, propOverride.colValue);
                             break;
                         case ShaderUtil.ShaderPropertyType.Float:
-                            propOverride.floatValue = EditorGUILayout.FloatField(p.description, propOverride.floatValue);
+                            propOverride.floatValue = EditorGUILayout.FloatField(desc, propOverride.floatValue);
                             break;
                         case ShaderUtil.ShaderPropertyType.Range:
-                            propOverride.floatValue = EditorGUILayout.Slider(p.description, propOverride.floatValue, p.rangeMin, p.rangeMax);
+                            propOverride.floatValue = EditorGUILayout.Slider(desc, propOverride.floatValue, p.rangeMin, p.rangeMax);
                             break;
                         case ShaderUtil.ShaderPropertyType.Vector:
-                            propOverride.vecValue = EditorGUILayout.Vector4Field(p.description, propOverride.vecValue);
+                            propOverride.vecValue = EditorGUILayout.Vector4Field(desc, propOverride.vecValue);
                             break;
                         case ShaderUtil.ShaderPropertyType.TexEnv:
-                            propOverride.texValue = (Texture)EditorGUILayout.ObjectField(p.description, propOverride.texValue, typeof(Texture), false);
+                            propOverride.texValue = (Texture)EditorGUILayout.ObjectField(desc, propOverride.texValue, typeof(Texture), false);
                             break;
                     }
                     if(buttonPressed)
