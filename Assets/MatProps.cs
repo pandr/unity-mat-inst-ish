@@ -6,13 +6,6 @@ using UnityEditor;
 [ExecuteInEditMode]
 public class MatProps : MonoBehaviour
 {
-    public class ShaderProperty
-    {
-        public string name;
-        public ShaderUtil.ShaderPropertyType type;
-        public string description;
-    }
-
     [System.Serializable]
     public class ShaderPropertyValue
     {
@@ -24,14 +17,21 @@ public class MatProps : MonoBehaviour
         public Texture texValue;
     }
 
-    // Cache of known shaders and their properties
-    public static Dictionary<int, List<ShaderProperty>> shaderProps = new Dictionary<int, List<ShaderProperty>>();
-
+    // This is where the overrides are serialized
     public List<ShaderPropertyValue> propertyOverrides = new List<ShaderPropertyValue>();
+
+    // List of renderers we are affecting
+    [System.NonSerialized]
+    public List<Renderer> m_Renderers = new List<Renderer>();
 
     private void OnEnable()
     {
         Apply();
+    }
+
+    private void OnDisable()
+    {
+        Clear();
     }
 
     private void OnValidate()
@@ -39,29 +39,43 @@ public class MatProps : MonoBehaviour
         Apply();
     }
 
-    public static List<ShaderProperty> GetShaderProperties(Shader s)
+    public void Clear()
     {
-        if (shaderProps.ContainsKey(s.GetInstanceID()))
-            return shaderProps[s.GetInstanceID()];
-
-        var pc = ShaderUtil.GetPropertyCount(s);
-        var res = new List<ShaderProperty>();
-        for(var i = 0; i < pc; i++)
+        MaterialPropertyBlock mbp = new MaterialPropertyBlock();
+        foreach(var r in m_Renderers)
         {
-            ShaderProperty sp = new ShaderProperty();
-            sp.name = ShaderUtil.GetPropertyName(s, i);
-            sp.type = ShaderUtil.GetPropertyType(s, i);
-            sp.description = ShaderUtil.GetPropertyDescription(s, i);
-            res.Add(sp);
-            //Debug.Log(sp.name + ":" + sp.type);
+            r.GetPropertyBlock(mbp);
+            mbp.Clear();
+            r.SetPropertyBlock(mbp);
         }
-        return shaderProps[s.GetInstanceID()] = res;
     }
 
     public void Apply()
     {
+        // Refresh list of renderers to apply to
+        m_Renderers.Clear();
+
+        // First look for locally attached render components
+        foreach(var r in GetComponents<Renderer>())
+        {
+            m_Renderers.Add(r);
+        }
+
+        // If none found, look for a local LODGroup
+        if(m_Renderers.Count == 0)
+        {
+            foreach(var lg in GetComponents<LODGroup>())
+            {
+                foreach(var l in lg.GetLODs())
+                {
+                    m_Renderers.AddRange(l.renderers);
+                }
+            }
+        }
+
+        // Apply overrides
         MaterialPropertyBlock mbp = new MaterialPropertyBlock();
-        foreach(var r in GetComponentsInChildren<Renderer>())
+        foreach(var r in m_Renderers)
         {
             r.GetPropertyBlock(mbp);
             mbp.Clear();
