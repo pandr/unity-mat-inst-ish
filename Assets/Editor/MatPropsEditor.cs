@@ -16,7 +16,7 @@ public class MatPropsEditor : Editor
     class PropertyFootprint
     {
         public string property;
-        public ShaderUtil.ShaderPropertyType type;
+        public ShaderPropertyType type;
         public string description;
         public HashSet<Shader> shaders = new HashSet<Shader>();
         public float rangeMin;
@@ -35,9 +35,9 @@ public class MatPropsEditor : Editor
         {
             var sp = new PropertyFootprint();
             sp.property = ShaderUtil.GetPropertyName(s, i);
-            sp.type = ShaderUtil.GetPropertyType(s, i);
+            sp.type = (ShaderPropertyType)ShaderUtil.GetPropertyType(s, i);
             sp.description = ShaderUtil.GetPropertyDescription(s, i);
-            if(sp.type == ShaderUtil.ShaderPropertyType.Range)
+            if(sp.type == ShaderPropertyType.Range)
             {
                 sp.rangeMin = ShaderUtil.GetRangeLimits(s, i, 1);
                 sp.rangeMax = ShaderUtil.GetRangeLimits(s, i, 2);
@@ -160,19 +160,19 @@ public class MatPropsEditor : Editor
                     Undo.RecordObject(myMatProps, "Override");
                     switch(p.type)
                     {
-                        case ShaderUtil.ShaderPropertyType.Color:
+                        case ShaderPropertyType.Color:
                             propOverride.colValue = EditorGUILayout.ColorField(desc, propOverride.colValue);
                             break;
-                        case ShaderUtil.ShaderPropertyType.Float:
+                        case ShaderPropertyType.Float:
                             propOverride.floatValue = EditorGUILayout.FloatField(desc, propOverride.floatValue);
                             break;
-                        case ShaderUtil.ShaderPropertyType.Range:
+                        case ShaderPropertyType.Range:
                             propOverride.floatValue = EditorGUILayout.Slider(desc, propOverride.floatValue, p.rangeMin, p.rangeMax);
                             break;
-                        case ShaderUtil.ShaderPropertyType.Vector:
+                        case ShaderPropertyType.Vector:
                             propOverride.vecValue = EditorGUILayout.Vector4Field(desc, propOverride.vecValue);
                             break;
-                        case ShaderUtil.ShaderPropertyType.TexEnv:
+                        case ShaderPropertyType.TexEnv:
                             propOverride.texValue = (Texture)EditorGUILayout.ObjectField(desc, propOverride.texValue, typeof(Texture), false);
                             break;
                     }

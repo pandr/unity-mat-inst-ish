@@ -1,7 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEditor;
+
+public enum ShaderPropertyType
+{
+    Color = 0,
+    Vector = 1,
+    Float = 2,
+    Range = 3,
+    TexEnv = 4
+}
 
 [ExecuteInEditMode]
 public class MatProps : MonoBehaviour
@@ -10,7 +18,7 @@ public class MatProps : MonoBehaviour
     public class ShaderPropertyValue
     {
         public string name;
-        public ShaderUtil.ShaderPropertyType type;
+        public ShaderPropertyType type;
         public Color colValue;
         public Vector4 vecValue;
         public float floatValue;
@@ -83,17 +91,17 @@ public class MatProps : MonoBehaviour
             {
                 switch(spv.type)
                 {
-                    case ShaderUtil.ShaderPropertyType.Color:
+                    case ShaderPropertyType.Color:
                         mbp.SetColor(spv.name, spv.colValue);
                         break;
-                    case ShaderUtil.ShaderPropertyType.Float:
-                    case ShaderUtil.ShaderPropertyType.Range:
+                    case ShaderPropertyType.Float:
+                    case ShaderPropertyType.Range:
                         mbp.SetFloat(spv.name, spv.floatValue);
                         break;
-                    case ShaderUtil.ShaderPropertyType.Vector:
+                    case ShaderPropertyType.Vector:
                         mbp.SetVector(spv.name, spv.vecValue);
                         break;
-                    case ShaderUtil.ShaderPropertyType.TexEnv:
+                    case ShaderPropertyType.TexEnv:
                         if(spv.texValue != null)
                             mbp.SetTexture(spv.name, spv.texValue);
                         break;
