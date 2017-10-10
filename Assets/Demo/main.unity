@@ -762,12 +762,13 @@ MonoBehaviour:
   propertyOverrides:
   - name: _Color
     type: 0
-    colValue: {r: 0.35168836, g: 0.58823526, b: 0.3070934, a: 0}
+    colValue: {r: 0.75735295, g: 0.12251296, b: 0.37207085, a: 0}
     vecValue: {x: 0, y: 0, z: 0, w: 0}
     floatValue: 0
     texValue: {fileID: 0}
   m_Renderers:
   - {fileID: 1960898275}
+  - {fileID: 19428012}
 --- !u!23 &1960898275
 MeshRenderer:
   m_ObjectHideFlags: 0

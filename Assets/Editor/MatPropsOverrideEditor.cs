@@ -53,11 +53,18 @@ public class MatPropsOverrideEditor : Editor
 
         EditorGUILayout.Space();
 
+        var headStyle = new GUIStyle("ShurikenModuleTitle");
+        headStyle.fixedHeight = 20.0f;
+        headStyle.contentOffset = new Vector2(5, -2);
+        headStyle.font = EditorStyles.boldFont;
+
+        var re = GUILayoutUtility.GetRect(20, 22, headStyle);
+        GUI.Box(re, "Affected renderers", headStyle);
+
         // Draw header for affected renders
         GUILayout.BeginHorizontal();
-        GUILayout.Label("Affected renderers:", EditorStyles.boldLabel);
         GUILayout.FlexibleSpace();
-        if (GUILayout.Button("Populate from children"))
+        if (GUILayout.Button("Populate from children", "Button"))
         {
             Undo.RecordObject(myMatProps, "Populate");
             myMatProps.Populate();
@@ -88,8 +95,9 @@ public class MatPropsOverrideEditor : Editor
 
         // Draw properties
         EditorGUILayout.Space();
+        re = GUILayoutUtility.GetRect(16f, 22f, headStyle);
+        GUI.Box(re, "Properties:", headStyle);
         GUILayout.BeginHorizontal();
-        GUILayout.Label("Properties:", EditorStyles.boldLabel);
         GUILayout.FlexibleSpace();
         m_ShowAll = GUILayout.Toggle(m_ShowAll, "Show all", "Button");
         GUILayout.EndHorizontal();
@@ -151,14 +159,14 @@ public class MatPropsOverrideEditor : Editor
         foreach (var shaderSet in sets)
         {
             // Draw header for this set of shaders
-            GUILayout.BeginVertical(EditorStyles.textArea);
             var res = "";
             foreach (var shader in shaderSet)
             {
-                res += ", " + shader.name;
+                res += (res.Length > 0 ? ", " : "") + shader.name;
             }
-            GUILayout.Label("Shaders: " + res.Substring(2));
-            GUILayout.EndVertical();
+            headStyle.font = EditorStyles.standardFont;
+            re = GUILayoutUtility.GetRect(16f, 22f, headStyle);
+            GUI.Box(re, "Affected shaders: " + res, headStyle);
 
             // Draw properties
             bool anyShown = false;

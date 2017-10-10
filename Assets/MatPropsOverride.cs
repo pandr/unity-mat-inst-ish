@@ -51,6 +51,8 @@ public class MatPropsOverride : MonoBehaviour
         MaterialPropertyBlock mbp = new MaterialPropertyBlock();
         foreach (var r in m_Renderers)
         {
+            if (r == null)
+                continue;
             r.GetPropertyBlock(mbp);
             mbp.Clear();
             r.SetPropertyBlock(mbp);
