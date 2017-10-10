@@ -31,13 +31,13 @@ public class MatPropsEditor : Editor
 
         var pc = ShaderUtil.GetPropertyCount(s);
         var res = new List<PropertyFootprint>();
-        for(var i = 0; i < pc; i++)
+        for (var i = 0; i < pc; i++)
         {
             var sp = new PropertyFootprint();
             sp.property = ShaderUtil.GetPropertyName(s, i);
             sp.type = (ShaderPropertyType)ShaderUtil.GetPropertyType(s, i);
             sp.description = ShaderUtil.GetPropertyDescription(s, i);
-            if(sp.type == ShaderPropertyType.Range)
+            if (sp.type == ShaderPropertyType.Range)
             {
                 sp.rangeMin = ShaderUtil.GetRangeLimits(s, i, 1);
                 sp.rangeMax = ShaderUtil.GetRangeLimits(s, i, 2);
@@ -49,18 +49,55 @@ public class MatPropsEditor : Editor
 
     public override void OnInspectorGUI()
     {
+        var myMatProps = target as MatProps;
+
+        EditorGUILayout.Space();
+
+        // Draw header for affected renders
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("Affected renderers:", EditorStyles.boldLabel);
+        GUILayout.FlexibleSpace();
+        if (GUILayout.Button("Populate from children"))
+        {
+            Undo.RecordObject(myMatProps, "Populate");
+            myMatProps.Populate();
+        }
+        GUILayout.EndHorizontal();
+
+        // Draw list of renderers
+        EditorGUI.indentLevel += 1;
+        EditorGUI.BeginChangeCheck();
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("m_Renderers"), true);
+        if (EditorGUI.EndChangeCheck())
+        {
+            // Clear out all previously affected renders
+            myMatProps.Clear();
+            serializedObject.ApplyModifiedProperties();
+
+            // Remove any null elements that may have appeared from user editing
+            for (var i = myMatProps.m_Renderers.Count - 1; i >= 0; i--)
+            {
+                if (myMatProps.m_Renderers[i] == null)
+                    myMatProps.m_Renderers.RemoveAt(i);
+            }
+
+            // Apply to new list of renderers
+            myMatProps.Apply();
+        }
+        EditorGUI.indentLevel -= 1;
+
+        // Draw properties
         EditorGUILayout.Space();
         GUILayout.BeginHorizontal();
         GUILayout.Label("Properties:", EditorStyles.boldLabel);
         GUILayout.FlexibleSpace();
-        m_ShowAll = GUILayout.Toggle(m_ShowAll, "Show all");
+        m_ShowAll = GUILayout.Toggle(m_ShowAll, "Show all", "Button");
         GUILayout.EndHorizontal();
         EditorGUILayout.Space();
-        var myMatProps = target as MatProps;
 
-        if(myMatProps.m_Renderers.Count == 0)
+        if (myMatProps.m_Renderers.Count == 0)
         {
-            EditorGUILayout.HelpBox("No renderers found!. This component needs either a renderer component or a LODGroup with some lods", MessageType.Error);
+            EditorGUILayout.HelpBox("No renderers affected!. This component makes no sense without renderers to affect.", MessageType.Error);
             return;
         }
 
@@ -69,15 +106,17 @@ public class MatPropsEditor : Editor
 
         foreach (var render in myMatProps.m_Renderers)
         {
+            if (render == null)
+                continue;
             foreach (var material in render.sharedMaterials)
             {
                 if (!material || !material.shader)
                     continue;
                 var shaderProperties = GetShaderProperties(material.shader);
-                foreach(var shaderProp in shaderProperties)
+                foreach (var shaderProp in shaderProperties)
                 {
                     var fp = propertyFootprints.Find(x => x.property == shaderProp.property);
-                    if(fp != null)
+                    if (fp != null)
                     {
                         // Prop already in a footprint; just add this shader
                         fp.shaders.Add(material.shader);
@@ -101,7 +140,7 @@ public class MatPropsEditor : Editor
         List<HashSet<Shader>> sets = new List<HashSet<Shader>>();
         foreach (var fp in propertyFootprints)
         {
-            if(sets.Find(x => x.SetEquals(fp.shaders)) == null)
+            if (sets.Find(x => x.SetEquals(fp.shaders)) == null)
                 sets.Add(fp.shaders);
         }
 
@@ -109,12 +148,12 @@ public class MatPropsEditor : Editor
         sets.Sort((a, b) => b.Count.CompareTo(a.Count));
 
         // Draw UI
-        foreach(var shaderSet in sets)
+        foreach (var shaderSet in sets)
         {
             // Draw header for this set of shaders
             GUILayout.BeginVertical(EditorStyles.textArea);
             var res = "";
-            foreach(var shader in shaderSet)
+            foreach (var shader in shaderSet)
             {
                 res += ", " + shader.name;
             }
@@ -123,7 +162,7 @@ public class MatPropsEditor : Editor
 
             // Draw properties
             bool anyShown = false;
-            foreach(var p in propertyFootprints)
+            foreach (var p in propertyFootprints)
             {
                 // Only draw properties that touches this set
                 if (!p.shaders.SetEquals(shaderSet))
@@ -138,14 +177,14 @@ public class MatPropsEditor : Editor
                 anyShown = true;
                 GUILayout.BeginHorizontal();
                 var buttonPressed = false;
-                if(m_ShowAll)
+                if (m_ShowAll)
                     buttonPressed = GUILayout.Button(hasOverride ? "-" : "+", narrowButton);
                 var desc = new GUIContent(p.description, p.property);
-                if(!hasOverride)
+                if (!hasOverride)
                 {
                     // Draw an non-overridden property. Offer to become overridden
                     GUILayout.Label(desc);
-                    if(buttonPressed)
+                    if (buttonPressed)
                     {
                         var spv = new MatProps.ShaderPropertyValue();
                         spv.type = p.type;
@@ -158,7 +197,7 @@ public class MatPropsEditor : Editor
                 {
                     // Draw an overridden property. Offer change of value
                     Undo.RecordObject(myMatProps, "Override");
-                    switch(p.type)
+                    switch (p.type)
                     {
                         case ShaderPropertyType.Color:
                             propOverride.colValue = EditorGUILayout.ColorField(desc, propOverride.colValue);
@@ -176,7 +215,7 @@ public class MatPropsEditor : Editor
                             propOverride.texValue = (Texture)EditorGUILayout.ObjectField(desc, propOverride.texValue, typeof(Texture), false);
                             break;
                     }
-                    if(buttonPressed)
+                    if (buttonPressed)
                     {
                         myMatProps.propertyOverrides.Remove(propOverride);
                     }
@@ -189,7 +228,8 @@ public class MatPropsEditor : Editor
                 GUILayout.Label("(none)");
             }
         }
-        if(GUI.changed)
+
+        if (GUI.changed)
         {
             myMatProps.Apply();
         }

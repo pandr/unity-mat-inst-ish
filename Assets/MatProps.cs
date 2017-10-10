@@ -29,7 +29,6 @@ public class MatProps : MonoBehaviour
     public List<ShaderPropertyValue> propertyOverrides = new List<ShaderPropertyValue>();
 
     // List of renderers we are affecting
-    [System.NonSerialized]
     public List<Renderer> m_Renderers = new List<Renderer>();
 
     private void OnEnable()
@@ -50,7 +49,7 @@ public class MatProps : MonoBehaviour
     public void Clear()
     {
         MaterialPropertyBlock mbp = new MaterialPropertyBlock();
-        foreach(var r in m_Renderers)
+        foreach (var r in m_Renderers)
         {
             r.GetPropertyBlock(mbp);
             mbp.Clear();
@@ -58,38 +57,33 @@ public class MatProps : MonoBehaviour
         }
     }
 
+    public void Populate()
+    {
+        m_Renderers.Clear();
+        var childRenderers = GetComponentsInChildren<Renderer>();
+        if (childRenderers.Length > 100)
+        {
+            Debug.LogError("Too many renderers.");
+            return;
+        }
+        m_Renderers.AddRange(childRenderers);
+    }
+
     public void Apply()
     {
-        // Refresh list of renderers to apply to
-        m_Renderers.Clear();
-
-        // First look for locally attached render components
-        foreach(var r in GetComponents<Renderer>())
-        {
-            m_Renderers.Add(r);
-        }
-
-        // If none found, look for a local LODGroup
-        if(m_Renderers.Count == 0)
-        {
-            foreach(var lg in GetComponents<LODGroup>())
-            {
-                foreach(var l in lg.GetLODs())
-                {
-                    m_Renderers.AddRange(l.renderers);
-                }
-            }
-        }
-
         // Apply overrides
         MaterialPropertyBlock mbp = new MaterialPropertyBlock();
-        foreach(var r in m_Renderers)
+        foreach (var r in m_Renderers)
         {
+            // Can happen when you are editing the through the MatPropsEditor
+            if (r == null)
+                continue;
+
             r.GetPropertyBlock(mbp);
             mbp.Clear();
-            foreach(var spv in propertyOverrides)
+            foreach (var spv in propertyOverrides)
             {
-                switch(spv.type)
+                switch (spv.type)
                 {
                     case ShaderPropertyType.Color:
                         mbp.SetColor(spv.name, spv.colValue);
@@ -102,7 +96,7 @@ public class MatProps : MonoBehaviour
                         mbp.SetVector(spv.name, spv.vecValue);
                         break;
                     case ShaderPropertyType.TexEnv:
-                        if(spv.texValue != null)
+                        if (spv.texValue != null)
                             mbp.SetTexture(spv.name, spv.texValue);
                         break;
                 }
