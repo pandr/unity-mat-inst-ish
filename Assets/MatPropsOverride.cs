@@ -12,7 +12,7 @@ public enum ShaderPropertyType
 }
 
 [ExecuteInEditMode]
-public class MatProps : MonoBehaviour
+public class MatPropsOverride : MonoBehaviour
 {
     [System.Serializable]
     public class ShaderPropertyValue

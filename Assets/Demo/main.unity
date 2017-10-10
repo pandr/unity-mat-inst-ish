@@ -123,7 +123,6 @@ GameObject:
   - component: {fileID: 19428014}
   - component: {fileID: 19428013}
   - component: {fileID: 19428012}
-  - component: {fileID: 19428011}
   m_Layer: 0
   m_Name: Sphere (1)
   m_TagString: Untagged
@@ -131,24 +130,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &19428011
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 19428010}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: db59c7c83bc06a9459208d6b1b36a41a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  propertyOverrides:
-  - name: _Color
-    type: 0
-    colValue: {r: 0.7058823, g: 0.06228375, b: 0.36854786, a: 0}
-    vecValue: {x: 0, y: 0, z: 0, w: 0}
-    floatValue: 0
-    texValue: {fileID: 0}
 --- !u!23 &19428012
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -545,7 +526,7 @@ MonoBehaviour:
   propertyOverrides:
   - name: _Color
     type: 0
-    colValue: {r: 0.6102941, g: 0.45772058, b: 0.45772058, a: 0}
+    colValue: {r: 0.6764706, g: 0.23378025, b: 0.23378025, a: 0}
     vecValue: {x: 0, y: 0, z: 0, w: 0}
     floatValue: 0
     texValue: {fileID: 0}
@@ -561,6 +542,20 @@ MonoBehaviour:
     vecValue: {x: 0, y: 0, z: 0, w: 0}
     floatValue: 0.748
     texValue: {fileID: 0}
+  m_Renderers:
+  - {fileID: 833849257}
+  - {fileID: 202682457}
+  - {fileID: 833849256}
+--- !u!23 &833849256 stripped
+MeshRenderer:
+  m_PrefabParentObject: {fileID: 23845624124708100, guid: ce0dd1b1b2133cc4a80eef57887f8835,
+    type: 2}
+  m_PrefabInternal: {fileID: 833849252}
+--- !u!23 &833849257 stripped
+MeshRenderer:
+  m_PrefabParentObject: {fileID: 23229929147321982, guid: ce0dd1b1b2133cc4a80eef57887f8835,
+    type: 2}
+  m_PrefabInternal: {fileID: 833849252}
 --- !u!1001 &1024137956
 Prefab:
   m_ObjectHideFlags: 0
@@ -745,6 +740,7 @@ GameObject:
   - component: {fileID: 1960898277}
   - component: {fileID: 1960898276}
   - component: {fileID: 1960898275}
+  - component: {fileID: 1960898274}
   m_Layer: 0
   m_Name: Sphere
   m_TagString: Untagged
@@ -752,6 +748,26 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!114 &1960898274
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1960898273}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: db59c7c83bc06a9459208d6b1b36a41a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  propertyOverrides:
+  - name: _Color
+    type: 0
+    colValue: {r: 0.35168836, g: 0.58823526, b: 0.3070934, a: 0}
+    vecValue: {x: 0, y: 0, z: 0, w: 0}
+    floatValue: 0
+    texValue: {fileID: 0}
+  m_Renderers:
+  - {fileID: 1960898275}
 --- !u!23 &1960898275
 MeshRenderer:
   m_ObjectHideFlags: 0

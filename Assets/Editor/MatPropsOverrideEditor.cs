@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-[CustomEditor(typeof(MatProps))]
-public class MatPropsEditor : Editor
+[CustomEditor(typeof(MatPropsOverride))]
+public class MatPropsOverrideEditor : Editor
 {
     static GUILayoutOption narrowButton = GUILayout.Width(20.0f);
 
@@ -49,7 +49,7 @@ public class MatPropsEditor : Editor
 
     public override void OnInspectorGUI()
     {
-        var myMatProps = target as MatProps;
+        var myMatProps = target as MatPropsOverride;
 
         EditorGUILayout.Space();
 
@@ -186,7 +186,7 @@ public class MatPropsEditor : Editor
                     GUILayout.Label(desc);
                     if (buttonPressed)
                     {
-                        var spv = new MatProps.ShaderPropertyValue();
+                        var spv = new MatPropsOverride.ShaderPropertyValue();
                         spv.type = p.type;
                         spv.name = p.property;
                         Undo.RecordObject(myMatProps, "Override");
