@@ -13,7 +13,7 @@ public class MatPropsOverrideEditor : Editor
 
     // Used to track what shaders are affected by a property and also to cache information
     // about properties
-    class PropertyFootprint
+    public class PropertyFootprint
     {
         public string property;
         public ShaderPropertyType type;
@@ -24,13 +24,13 @@ public class MatPropsOverrideEditor : Editor
     }
 
     // Caches the list of properties
-    static List<PropertyFootprint> GetShaderProperties(Shader s)
+    public static List<PropertyFootprint> GetShaderProperties(Shader s)
     {
         if (shaderProps.ContainsKey(s.GetInstanceID()))
             return shaderProps[s.GetInstanceID()];
 
-        var pc = ShaderUtil.GetPropertyCount(s);
         var res = new List<PropertyFootprint>();
+        var pc = ShaderUtil.GetPropertyCount(s);
         for (var i = 0; i < pc; i++)
         {
             var sp = new PropertyFootprint();
@@ -97,10 +97,20 @@ public class MatPropsOverrideEditor : Editor
         EditorGUILayout.Space();
         re = GUILayoutUtility.GetRect(16f, 22f, headStyle);
         GUI.Box(re, "Properties:", headStyle);
+
+        // Draw MatPropOverrideAsset field
+        EditorGUI.BeginChangeCheck();
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("propertyOverrideAsset"), new GUIContent("Property override: asset"));
+        if (EditorGUI.EndChangeCheck())
+        {
+            serializedObject.ApplyModifiedProperties();
+        }
+
         GUILayout.BeginHorizontal();
-        GUILayout.FlexibleSpace();
-        m_ShowAll = GUILayout.Toggle(m_ShowAll, "Show all", "Button");
+        GUILayout.Label("Property override: manual", EditorStyles.boldLabel);
+        m_ShowAll = GUILayout.Toggle(m_ShowAll, "Show all", "Button", GUILayout.Width(70));
         GUILayout.EndHorizontal();
+
         EditorGUILayout.Space();
 
         if (myMatProps.m_Renderers.Count == 0)
@@ -110,7 +120,12 @@ public class MatPropsOverrideEditor : Editor
         }
 
         // gather all materials, shaders, properties etc.
-        var propertyFootprints = new List<PropertyFootprint>();
+        var affectedShaders = new List<Shader>();
+
+        if (myMatProps.propertyOverrideAsset != null)
+        {
+            affectedShaders.Add(myMatProps.propertyOverrideAsset.shader);
+        }
 
         foreach (var render in myMatProps.m_Renderers)
         {
@@ -120,25 +135,49 @@ public class MatPropsOverrideEditor : Editor
             {
                 if (!material || !material.shader)
                     continue;
-                var shaderProperties = GetShaderProperties(material.shader);
-                foreach (var shaderProp in shaderProperties)
+                affectedShaders.Add(material.shader);
+            }
+        }
+
+        var changed = DrawOverrideGUI(affectedShaders, myMatProps.propertyOverrides, ref m_ShowAll, myMatProps);
+
+        if (changed)
+            myMatProps.Apply();
+    }
+
+    public static bool DrawOverrideGUI(
+        List<Shader> affectedShaders,
+        List<MatPropsOverride.ShaderPropertyValue> propertyOverrides,
+        ref bool showAll,
+        UnityEngine.Object target)
+    {
+        var headStyle = new GUIStyle("ShurikenModuleTitle");
+        headStyle.fixedHeight = 20.0f;
+        headStyle.contentOffset = new Vector2(5, -2);
+        headStyle.font = EditorStyles.boldFont;
+
+        var propertyFootprints = new List<PropertyFootprint>();
+
+        foreach (var shader in affectedShaders)
+        {
+            var shaderProperties = GetShaderProperties(shader);
+            foreach (var shaderProp in shaderProperties)
+            {
+                var fp = propertyFootprints.Find(x => x.property == shaderProp.property);
+                if (fp != null)
                 {
-                    var fp = propertyFootprints.Find(x => x.property == shaderProp.property);
-                    if (fp != null)
-                    {
-                        // Prop already in a footprint; just add this shader
-                        fp.shaders.Add(material.shader);
-                        continue;
-                    }
-                    fp = new PropertyFootprint();
-                    fp.property = shaderProp.property;
-                    fp.type = shaderProp.type;
-                    fp.description = shaderProp.description;
-                    fp.shaders.Add(material.shader);
-                    fp.rangeMax = shaderProp.rangeMax;
-                    fp.rangeMin = shaderProp.rangeMin;
-                    propertyFootprints.Add(fp);
+                    // Prop already in a footprint; just add this shader
+                    fp.shaders.Add(shader);
+                    continue;
                 }
+                fp = new PropertyFootprint();
+                fp.property = shaderProp.property;
+                fp.type = shaderProp.type;
+                fp.description = shaderProp.description;
+                fp.shaders.Add(shader);
+                fp.rangeMax = shaderProp.rangeMax;
+                fp.rangeMin = shaderProp.rangeMin;
+                propertyFootprints.Add(fp);
             }
         }
 
@@ -165,7 +204,7 @@ public class MatPropsOverrideEditor : Editor
                 res += (res.Length > 0 ? ", " : "") + shader.name;
             }
             headStyle.font = EditorStyles.standardFont;
-            re = GUILayoutUtility.GetRect(16f, 22f, headStyle);
+            var re = GUILayoutUtility.GetRect(16f, 22f, headStyle);
             GUI.Box(re, "Affected shaders: " + res, headStyle);
 
             // Draw properties
@@ -177,16 +216,16 @@ public class MatPropsOverrideEditor : Editor
                     continue;
 
                 // Decide if we should draw
-                var propOverride = myMatProps.propertyOverrides.Find(x => x.name == p.property);
+                var propOverride = propertyOverrides.Find(x => x.name == p.property);
                 bool hasOverride = propOverride != null;
-                if (!hasOverride && !m_ShowAll)
+                if (!hasOverride && !showAll)
                     continue;
 
                 anyShown = true;
                 GUILayout.BeginHorizontal();
                 var buttonPressed = false;
-                if (m_ShowAll)
-                    buttonPressed = GUILayout.Button(hasOverride ? "-" : "+", narrowButton);
+                if (showAll)
+                    buttonPressed = GUILayout.Button(hasOverride ? "-" : "+", GUILayout.Width(20));
                 var desc = new GUIContent(p.description, p.property);
                 if (!hasOverride)
                 {
@@ -197,14 +236,14 @@ public class MatPropsOverrideEditor : Editor
                         var spv = new MatPropsOverride.ShaderPropertyValue();
                         spv.type = p.type;
                         spv.name = p.property;
-                        Undo.RecordObject(myMatProps, "Override");
-                        myMatProps.propertyOverrides.Add(spv);
+                        Undo.RecordObject(target, "Override");
+                        propertyOverrides.Add(spv);
                     }
                 }
                 else
                 {
                     // Draw an overridden property. Offer change of value
-                    Undo.RecordObject(myMatProps, "Override");
+                    Undo.RecordObject(target, "Override");
                     switch (p.type)
                     {
                         case ShaderPropertyType.Color:
@@ -225,7 +264,7 @@ public class MatPropsOverrideEditor : Editor
                     }
                     if (buttonPressed)
                     {
-                        myMatProps.propertyOverrides.Remove(propOverride);
+                        propertyOverrides.Remove(propOverride);
                     }
                 }
                 GUILayout.EndHorizontal();
@@ -237,10 +276,7 @@ public class MatPropsOverrideEditor : Editor
             }
         }
 
-        if (GUI.changed)
-        {
-            myMatProps.Apply();
-        }
+        return GUI.changed;
     }
 
     bool m_ShowAll = false;

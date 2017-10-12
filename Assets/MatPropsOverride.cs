@@ -27,6 +27,7 @@ public class MatPropsOverride : MonoBehaviour
 
     // This is where the overrides are serialized
     public List<ShaderPropertyValue> propertyOverrides = new List<ShaderPropertyValue>();
+    public MatPropsOverrideAsset propertyOverrideAsset = null;
 
     // List of renderers we are affecting
     public List<Renderer> m_Renderers = new List<Renderer>();
@@ -83,7 +84,11 @@ public class MatPropsOverride : MonoBehaviour
 
             r.GetPropertyBlock(mbp);
             mbp.Clear();
-            foreach (var spv in propertyOverrides)
+            var overrides = new List<ShaderPropertyValue>();
+            if(propertyOverrideAsset != null)
+                overrides.AddRange(propertyOverrideAsset.propertyOverrides);
+            overrides.AddRange(propertyOverrides);
+            foreach (var spv in overrides)
             {
                 switch (spv.type)
                 {
