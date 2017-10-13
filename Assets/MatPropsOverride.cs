@@ -47,6 +47,25 @@ public class MatPropsOverride : MonoBehaviour
         Apply();
     }
 
+    // Try to do something reasonable when component is added
+    private void Reset()
+    {
+        Clear();
+        m_Renderers.Clear();
+        m_Renderers.AddRange(GetComponents<Renderer>());
+        if(m_Renderers.Count == 0)
+        {
+            // Fall back, try LODGroup
+            var lg = GetComponent<LODGroup>();
+            if(lg!=null)
+            {
+                foreach (var l in lg.GetLODs())
+                    m_Renderers.AddRange(l.renderers);
+            }
+        }
+        Apply();
+    }
+
     public void Clear()
     {
         MaterialPropertyBlock mbp = new MaterialPropertyBlock();
