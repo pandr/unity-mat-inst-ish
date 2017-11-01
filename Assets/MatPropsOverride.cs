@@ -25,12 +25,24 @@ public class MatPropsOverride : MonoBehaviour
         public Texture texValue;
     }
 
-    // This is where the overrides are serialized
-    public List<ShaderPropertyValue> propertyOverrides = new List<ShaderPropertyValue>();
-    public MatPropsOverrideAsset propertyOverrideAsset = null;
+    [System.Serializable]
+    public class MaterialOverride
+    {
+        public bool active;
+        [System.NonSerialized]
+        public bool showAll;
+        public Material material;
+        public MatPropsOverrideAsset propertyOverrideAsset = null;
+        public List<ShaderPropertyValue> propertyOverrides = new List<ShaderPropertyValue>();
+    }
+
+    public List<MaterialOverride> materialOverrides = new List<MaterialOverride>();
 
     // List of renderers we are affecting
     public List<Renderer> m_Renderers = new List<Renderer>();
+
+    // List of materials we want to touch
+    public List<Material> m_Materials = new List<Material>();
 
     private void OnEnable()
     {
@@ -44,6 +56,7 @@ public class MatPropsOverride : MonoBehaviour
 
     private void OnValidate()
     {
+        Clear();
         Apply();
     }
 
@@ -53,11 +66,11 @@ public class MatPropsOverride : MonoBehaviour
         Clear();
         m_Renderers.Clear();
         m_Renderers.AddRange(GetComponents<Renderer>());
-        if(m_Renderers.Count == 0)
+        if (m_Renderers.Count == 0)
         {
             // Fall back, try LODGroup
             var lg = GetComponent<LODGroup>();
-            if(lg!=null)
+            if (lg != null)
             {
                 foreach (var l in lg.GetLODs())
                     m_Renderers.AddRange(l.renderers);
@@ -68,14 +81,16 @@ public class MatPropsOverride : MonoBehaviour
 
     public void Clear()
     {
-        MaterialPropertyBlock mbp = new MaterialPropertyBlock();
         foreach (var r in m_Renderers)
         {
             if (r == null)
                 continue;
-            r.GetPropertyBlock(mbp);
-            mbp.Clear();
-            r.SetPropertyBlock(mbp);
+            r.SetPropertyBlock(null);
+            for (int i = 0, c = r.sharedMaterials.Length; i < c; i++)
+            {
+                r.SetPropertyBlock(null, i);
+            }
+
         }
     }
 
@@ -94,41 +109,92 @@ public class MatPropsOverride : MonoBehaviour
     public void Apply()
     {
         // Apply overrides
-        MaterialPropertyBlock mbp = new MaterialPropertyBlock();
-        foreach (var r in m_Renderers)
+        MaterialPropertyBlock mpb = new MaterialPropertyBlock();
+        foreach (var renderer in m_Renderers)
         {
-            // Can happen when you are editing the through the MatPropsEditor
-            if (r == null)
+            // Can happen when you are editing the list
+            if (renderer == null)
                 continue;
 
-            r.GetPropertyBlock(mbp);
-            mbp.Clear();
-            var overrides = new List<ShaderPropertyValue>();
-            if(propertyOverrideAsset != null)
-                overrides.AddRange(propertyOverrideAsset.propertyOverrides);
-            overrides.AddRange(propertyOverrides);
-            foreach (var spv in overrides)
+            if (renderer.sharedMaterials.Length == 0)
+                continue;
+
+            // Two cases.
+            // A) there are only one type of material on this renderer. Then we 
+            //    can use the master material property block.
+            // B) different materials; then we use the per material property blocks
+
+            bool allSame = true;
+
+            // Check if multiple materials on this renderer
+            for (int i = 1, c = renderer.sharedMaterials.Length; i < c; i++)
             {
-                switch (spv.type)
+                if (renderer.sharedMaterials[i] != renderer.sharedMaterials[0])
+                    allSame = false;
+            }
+
+            if (allSame)
+            {
+                // Set master MaterialPropertyBlock
+                mpb.Clear();
+                var o = materialOverrides.Find(x => x.material == renderer.sharedMaterials[0]);
+                if (o == null || o.active == false)
                 {
-                    case ShaderPropertyType.Color:
-                        mbp.SetColor(spv.name, spv.colValue);
-                        break;
-                    case ShaderPropertyType.Float:
-                    case ShaderPropertyType.Range:
-                        mbp.SetFloat(spv.name, spv.floatValue);
-                        break;
-                    case ShaderPropertyType.Vector:
-                        mbp.SetVector(spv.name, spv.vecValue);
-                        break;
-                    case ShaderPropertyType.TexEnv:
-                        if (spv.texValue != null)
-                            mbp.SetTexture(spv.name, spv.texValue);
-                        break;
+                    renderer.SetPropertyBlock(null);
+                }
+                else
+                {
+                    if (o.propertyOverrideAsset != null)
+                        ApplyOverrides(mpb, o.propertyOverrideAsset.propertyOverrides);
+                    ApplyOverrides(mpb, o.propertyOverrides);
+                    renderer.SetPropertyBlock(mpb);
                 }
             }
-            r.SetPropertyBlock(mbp);
+            else
+            {
+                // Set specific MaterialPropertyBlocks
+                for (int i = 0, c = renderer.sharedMaterials.Length; i < c; i++)
+                {
+                    var o = materialOverrides.Find(x => x.material == renderer.sharedMaterials[i]);
+                    if (o == null || o.active == false)
+                    {
+                        renderer.SetPropertyBlock(null, i);
+                    }
+                    else
+                    {
+                        mpb.Clear();
+                        if (o.propertyOverrideAsset != null)
+                            ApplyOverrides(mpb, o.propertyOverrideAsset.propertyOverrides);
+                        ApplyOverrides(mpb, o.propertyOverrides);
+                        renderer.SetPropertyBlock(mpb, i);
+                    }
+                }
+            }
         }
     }
 
+    // Applies a list of individual override values to an mpb
+    void ApplyOverrides(MaterialPropertyBlock mpb, List<ShaderPropertyValue> overrides)
+    {
+        foreach (var spv in overrides)
+        {
+            switch (spv.type)
+            {
+                case ShaderPropertyType.Color:
+                    mpb.SetColor(spv.name, spv.colValue);
+                    break;
+                case ShaderPropertyType.Float:
+                case ShaderPropertyType.Range:
+                    mpb.SetFloat(spv.name, spv.floatValue);
+                    break;
+                case ShaderPropertyType.Vector:
+                    mpb.SetVector(spv.name, spv.vecValue);
+                    break;
+                case ShaderPropertyType.TexEnv:
+                    if (spv.texValue != null)
+                        mpb.SetTexture(spv.name, spv.texValue);
+                    break;
+            }
+        }
+    }
 }

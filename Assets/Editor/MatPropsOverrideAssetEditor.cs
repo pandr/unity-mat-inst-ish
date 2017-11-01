@@ -29,7 +29,7 @@ public class MatPropsOverrideAssetEditor : Editor
             return;
         }
 
-        // Draw properties
+        // Draw properties header
         EditorGUILayout.Space();
         var re = GUILayoutUtility.GetRect(16f, 22f, headStyle);
         GUI.Box(re, "Properties:", headStyle);
@@ -40,32 +40,45 @@ public class MatPropsOverrideAssetEditor : Editor
         EditorGUILayout.Space();
 
         // Draw property override GUI
-        var shaders = new List<Shader>();
-        shaders.Add(myMatProps.shader);
-        var changed = MatPropsOverrideEditor.DrawOverrideGUI(shaders, myMatProps.propertyOverrides, ref m_ShowAll, myMatProps);
+        var changed = MatPropsOverrideEditor.DrawOverrideGUI(myMatProps.shader, myMatProps.propertyOverrides, m_ShowAll, myMatProps);
 
-        if(GUILayout.Button("Select all affected objects in scene"))
+        // Draw button to select all
+        GUILayout.Space(20);
+        GUILayout.BeginHorizontal();
+        GUILayout.FlexibleSpace();
+        if (GUILayout.Button("Select all affected objects in scene", GUILayout.Height(30), GUILayout.Width(250)))
         {
             Selection.activeObject = null;
             var objs = new List<GameObject>();
             foreach (var mpo in GameObject.FindObjectsOfType<MatPropsOverride>())
             {
-                if (mpo.propertyOverrideAsset == myMatProps)
+                foreach (var o in mpo.materialOverrides)
                 {
-                    objs.Add(mpo.gameObject);
+                    if (o.propertyOverrideAsset == myMatProps)
+                    {
+                        objs.Add(mpo.gameObject);
+                        break;
+                    }
                 }
             }
             Selection.objects = objs.ToArray();
         }
+        GUILayout.FlexibleSpace();
+        GUILayout.EndHorizontal();
 
         if (changed)
         {
             // Refresh all objects in scene that uses our override.
             foreach (var mpo in GameObject.FindObjectsOfType<MatPropsOverride>())
             {
-                if (mpo.propertyOverrideAsset == myMatProps)
+                foreach (var o in mpo.materialOverrides)
                 {
-                    mpo.Apply();
+                    if (o.propertyOverrideAsset == myMatProps)
+                    {
+                        mpo.Clear();
+                        mpo.Apply();
+                        break;
+                    }
                 }
             }
             SceneView.RepaintAll();
