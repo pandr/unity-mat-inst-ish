@@ -141,10 +141,13 @@ public class MatPropsOverrideEditor : Editor
             // Draw enabled toggle and show_all button
             EditorGUILayout.BeginHorizontal();
             EditorGUI.BeginChangeCheck();
-            o.active = EditorGUILayout.Toggle(o.active, GUILayout.Width(20));
+            var actProp = serializedObject.FindProperty("materialOverrides.Array.data[" + i + "].active");
+            EditorGUILayout.PropertyField(actProp);
             if (EditorGUI.EndChangeCheck())
+            {
                 changed = true;
-            GUILayout.Label("Active");
+                serializedObject.ApplyModifiedProperties();
+            }
             GUILayout.FlexibleSpace();
             if(o.active)
                 o.showAll = GUILayout.Toggle(o.showAll, "Show all", "Button", GUILayout.Width(70));
@@ -171,7 +174,10 @@ public class MatPropsOverrideEditor : Editor
                 }
 
                 // Draw list of override properties
-                changed = changed | DrawOverrideGUI(o.material.shader, o.propertyOverrides, o.showAll, myMatProps);
+                if (Selection.gameObjects.Length > 1)
+                    EditorGUILayout.HelpBox("Multi editing not supported", MessageType.Info);
+                else
+                    changed = changed | DrawOverrideGUI(o.material.shader, o.propertyOverrides, o.showAll, myMatProps);
             }
         }
 

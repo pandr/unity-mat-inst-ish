@@ -83,6 +83,9 @@ public class MatPropsOverrideAssetEditor : Editor
             }
             SceneView.RepaintAll();
         }
+
+        if (changed)
+            EditorUtility.SetDirty(myMatProps);
     }
 }
 
